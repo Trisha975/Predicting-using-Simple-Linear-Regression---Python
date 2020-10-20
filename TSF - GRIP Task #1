@@ -1,0 +1,87 @@
+#importing necessary libraries
+import pandas as pd
+import numpy as np  
+import matplotlib.pyplot as plt  
+%matplotlib inline
+#Reading data from the given link
+url = "http://bit.ly/w-data"
+data = pd.read_csv(url)
+print("Data imported successfully!")
+#Printing the first 5 rows of the imported data
+data.head(5)
+#Checking whether there is any null value in the dataset
+data.isnull().sum()
+plt.style.use('ggplot')
+data.plot(kind='scatter', x='Hours', y='Scores', color='red', figsize=(10, 7))
+plt.legend(labels=['Scores'])
+plt.title('Relationship between Hours of Study and Percentage Scored' , size = 18)
+plt.xlabel('Hours of Study', size=16)
+plt.ylabel('Percentage Scored', size=16);
+from scipy.stats import pearsonr
+# Converting dataset into series 
+l1 = data['Hours'] 
+l2 = data['Scores']   
+# Applying Pearson's Correlation to find out the relationship between two variables 
+corr, _ = pearsonr(l1, l2) 
+print('Pearson\'s correlation = %.3f' % corr) 
+#Dividing the data into "attributes" (inputs) and "labels" (outputs).
+X = data['Hours'].values.reshape(-1,1)
+y = data['Scores'].values.reshape(-1,1)
+#Splitting the data into train and test sets.80% of the data is training set while 20% of the data is testing set
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+#Training the algorithm
+from sklearn.linear_model import LinearRegression
+lr = LinearRegression()  
+lr.fit(X_train, y_train) 
+print("Training Successful!")
+#Printing the values of the intercept and slope calculated by the linear regression algorithm 
+#To retrieve the intercept:
+print('Intercept = %.3f' % lr.intercept_)
+#For retrieving the slope:
+print('Slope = %.3f' % lr.coef_)
+#Plotting regression line with Training data
+l = lr.coef_*X_train+lr.intercept_
+plt.scatter(X_train, y_train, color = "red")
+plt.plot(X_train, l, color = "green")
+plt.title("Scores vs Hours (Training set)")
+plt.xlabel("Hours")
+plt.ylabel("Scores")
+plt.show()
+#Plotting regression line with Testing data
+l = lr.coef_*X_train+lr.intercept_
+plt.scatter(X_test, y_test, color = "red")
+plt.plot(X_train, l, color = "green")
+plt.title("Scores vs Hours (Testing set)")
+plt.xlabel("Hours")
+plt.ylabel("Scores")
+plt.show()
+#Plotting regression line with actual data points
+l = lr.coef_*X+lr.intercept_
+plt.scatter(X, y, color = "red")
+plt.plot(X, l, color = "green")
+plt.title("Scores vs Hours (Actual dataset)")
+plt.xlabel("Hours")
+plt.ylabel("Scores")
+plt.show()
+#Predicting the percentage scored
+y_pred = lr.predict(X_test)
+#Comparing the actual values vs the predicted values
+df = pd.DataFrame({'Actual': y_test.flatten(), 'Predicted': y_pred.flatten()})
+df
+#Plotting the actual vs predicted values
+df1 = df.head(25)
+df1.plot(kind='bar',figsize=(8,5))
+plt.grid(which='major', linestyle='-', linewidth='0.5', color='green')
+plt.grid(which='minor', linestyle=':', linewidth='0.5', color='black')
+plt.show()
+#Prediction with given data
+hours = np.array(9.25).reshape(-1, 1)
+pred = lr.predict(hours)
+print('No. of Hours = %.2f' %hours)
+print('Predicted Score = %.8f' %pred)
+#Calculating and displaying the three errors 
+from sklearn import metrics 
+print('Mean Squared Error = ', metrics.mean_squared_error(y_test, y_pred))  
+print('Root Mean Squared Error = ', np.sqrt(metrics.mean_squared_error(y_test, y_pred)))
+print('Mean Absolute Error = ', metrics.mean_absolute_error(y_test, y_pred))
